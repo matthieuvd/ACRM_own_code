@@ -726,3 +726,56 @@ lr_preds = logistic_regression.predict(X)
 
 # get intercept
 #print(logistic_regression.intercept_)
+
+
+
+###ASSIGNMENT
+
+## 4. Most popular product categories
+merged_oi_prod = pd.merge(order_items, products, on='product_id', how='inner')
+# Group by product category and calculate total sales volume and revenue
+category_sales = merged_oi_prod.groupby('product_category_name').agg(
+    sales_volume=pd.NamedAgg(column='product_id', aggfunc='count'),  # Counting rows for sales volume
+    revenue=pd.NamedAgg(column='price', aggfunc='sum')  # Summing up the price for revenue
+).reset_index()
+# Sort by sales volume and revenue
+sorted_by_volume = category_sales.sort_values(by='sales_volume', ascending=False)
+sorted_by_revenue = category_sales.sort_values(by='revenue', ascending=False)
+#print("Top Product Categories by Sales Volume:")
+#print(sorted_by_volume.head())
+#print("\nTop Product Categories by Revenue:")
+#print(sorted_by_revenue.head())
+
+
+## 5.Relationship between review score & product price
+# Merge the datasets
+merged_or_oi = pd.merge(order_reviews, order_items, on='order_id', how='inner')
+merged_or_oi_prod = pd.merge(merged_or_oi, products, on='product_id', how='inner')
+# Explore the relationship between review score and product price
+plt.figure(figsize=(10, 6))
+sns.boxplot(x='review_score', y='price', data=merged_or_oi_prod)
+plt.title('Relationship between Review Score and Product Price')
+#plt.show()
+# Explore the relationship between review score and product category
+plt.figure(figsize=(15, 6))
+sns.countplot(x='product_category_name', hue='review_score', data=merged_or_oi_prod)
+plt.title('Review Scores Distribution by Product Category')
+plt.xticks(rotation=90)
+#plt.show()
+
+
+## 6. Trends in sales performances
+# Convert the order_purchase_timestamp column to datetime format
+orders['order_purchase_timestamp'] = pd.to_datetime(orders['order_purchase_timestamp'])
+# Extract month and year from the timestamp
+orders['year_month'] = orders['order_purchase_timestamp'].dt.to_period('M')
+# Group by year and month to get the number of orders for each month
+monthly_sales_volume = orders.groupby('year_month').size()
+# Plot the sales volume over time
+plt.figure(figsize=(12, 6))
+monthly_sales_volume.plot()
+plt.title('Monthly Sales Volume Over Time')
+plt.xlabel('Time')
+plt.ylabel('Number of Orders')
+plt.grid(True)
+plt.show()
